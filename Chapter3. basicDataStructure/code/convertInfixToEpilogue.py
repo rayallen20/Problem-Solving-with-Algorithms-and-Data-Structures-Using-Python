@@ -1,16 +1,12 @@
 import string
 from listTailToRepresentStackTop import Stack
 
-# TODO: 该函数边界条件判断虽然正确 但 可读性非常差 需要修改!
 
-
-def convert_infix_to_epilogue(infix_string):
-    infix_list = infix_string.split()
-    # 存储操作符的栈
-    operator_stack = Stack()
+def convert_infix_to_epilogue(infix):
+    infix = infix.split()
 
     # 优先级字典
-    priority_dict = {
+    priority = {
         "*": 3,
         "/": 3,
         "+": 2,
@@ -18,40 +14,50 @@ def convert_infix_to_epilogue(infix_string):
         "(": 1
     }
 
-    # 结果列表
-    epilogue_list = []
+    # 暂存操作符的栈
+    operators = Stack()
 
-    for opera_char in infix_list:
-        if opera_char in string.ascii_uppercase:
-            # 当前字符是操作数 直接追加到结果列表尾部
-            epilogue_list.append(opera_char)
-        elif opera_char == ')':
-            # 当前字符是) 则栈内的元素一直弹出 直到弹出的元素为(为止 并将弹出的元素追加到结果列表中
-            tmp_bool = True
-            while tmp_bool:
-                operator_in_stack = operator_stack.pop()
-                if operator_in_stack != '(':
-                    epilogue_list.append(operator_in_stack)
-                else:
-                    break
+    # 后序表达式字符列表
+    epilogue = []
+
+    for char in infix:
+        if char in string.ascii_uppercase:
+            # 操作数直接追加至后续表达式列表结尾
+            epilogue.append(char)
         else:
-            # 当前字符是操作符
-            if operator_stack.is_empty():
-                operator_stack.push(opera_char)
-            elif priority_dict[operator_stack.peek()] >= priority_dict[opera_char] and opera_char != '(':
-                # 栈顶的操作符优先级高于或等于当前操作符 将栈内所有元素弹出并追加到结果列表中 然后将当前操作符压入栈内
-                while not operator_stack.is_empty():
-                    epilogue_list.append(operator_stack.pop())
-                operator_stack.push(opera_char)
+            if char == '(':
+                # ( 直接压入栈内
+                operators.push(char)
+            elif char == ')':
+                # ) 从栈内弹出元素 直到弹出的元素为(为止 并将这些弹出的操作符追加到结果列表中
+                while True:
+                    operator = operators.pop()
+                    if operator != '(':
+                        epilogue.append(operator)
+                    break
+            elif operators.is_empty():
+                # 栈为空 则将当前运算符直接压入栈内
+                operators.push(char)
             else:
-                # 栈顶的操作符优先级低于当前操作符 将当前操作符压入栈内
-                operator_stack.push(opera_char)
+                if priority[operators.peek()] < priority[char]:
+                    # 栈不为空 且栈顶操作符的优先级低于当前操作符 直接将当前操作符压入栈内
+                    operators.push(char)
+                else:
+                    # 栈不为空 且栈顶操作符的优先级高于或等于当前运算符
+                    # 先将栈内所有运算优先级高于或等于当前运算符的运算符弹出 追加到结果列表尾部
+                    # 再将当前运算符压入栈内
+                    if priority[operators.peek()] >= priority[char]:
+                        epilogue.append(operators.pop())
+                    else:
+                        operators.push(char)
 
-    # 中序表达式遍历完毕 栈内还有操作符 则所有元素弹出并追加至结果列表中
-    while not operator_stack.is_empty():
-        epilogue_list.append(operator_stack.pop())
+    # 遍历结束 如栈内还有操作符 则弹出并追加到结果列表尾部
+    while not operators.is_empty():
+        operator = operators.pop()
+        if operator != '(':
+            epilogue.append(operator)
 
-    return " ".join(epilogue_list)
+    return " ".join(epilogue)
 
 
 print(convert_infix_to_epilogue(" ( A + B ) * ( C + D ) "))
