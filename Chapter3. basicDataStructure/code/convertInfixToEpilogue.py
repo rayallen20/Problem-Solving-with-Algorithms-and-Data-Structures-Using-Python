@@ -52,14 +52,62 @@ def convert_infix_to_epilogue(infix):
                         operators.push(char)
 
     # 遍历结束 如栈内还有操作符 则弹出并追加到结果列表尾部
+    # 因为遍历已经结束了 所以必然在栈内不会有( 因此不用判断
     while not operators.is_empty():
-        operator = operators.pop()
-        if operator != '(':
-            epilogue.append(operator)
+        epilogue.append(operators.pop())
 
     return " ".join(epilogue)
 
 
-print(convert_infix_to_epilogue(" ( A + B ) * ( C + D ) "))
-print(convert_infix_to_epilogue(" ( A + B ) * C "))
-print(convert_infix_to_epilogue("A + B * C"))
+# print(convert_infix_to_epilogue(" ( A + B ) * ( C + D ) "))
+# print(convert_infix_to_epilogue(" ( A + B ) * C "))
+# print(convert_infix_to_epilogue("A + B * C"))
+
+
+"""
+中序表达式转化为后续表达式 书中代码
+书中代码和我自己写的比对 得出为什么他的可以比我的看上去更简洁且表达力更强
+"""
+
+
+def infix_to_postfix(infix_expr):
+    # prec: addr 优先级 (等于precedence)
+    prec = {
+        "*": 3,
+        "/": 3,
+        "+": 2,
+        "-": 2,
+        "(": 1
+    }
+
+    op_stack = Stack()
+    postfix_list = []
+
+    # token: n. 记号 符号 标记 (语言学中的专有释义)
+    token_list = infix_expr.split()
+
+    for token in token_list:
+        if token in string.ascii_uppercase:
+            postfix_list.append(token)
+        elif token == '(':
+            op_stack.push(token)
+        elif token == ')':
+            # 这一段比我那个 while True ... break 写的要精简
+            top_token = op_stack.pop()
+            while top_token != '(':
+                postfix_list.append(top_token)
+                top_token = op_stack.pop()
+        else:
+            while (not op_stack.is_empty()) and (prec[op_stack.peek()] >= prec[token]):
+                postfix_list.append(op_stack.pop())
+            op_stack.push(token)
+
+    while not op_stack.is_empty():
+        postfix_list.append(op_stack.pop())
+
+    return " ".join(postfix_list)
+
+
+print(infix_to_postfix(" ( A + B ) * ( C + D ) "))
+print(infix_to_postfix(" ( A + B ) * C "))
+print(infix_to_postfix("A + B * C"))
