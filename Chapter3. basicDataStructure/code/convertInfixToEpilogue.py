@@ -1,6 +1,10 @@
 import string
 from listTailToRepresentStackTop import Stack
 
+"""
+中序表达式转化为后续表达式 红方实现
+"""
+
 
 def convert_infix_to_epilogue(infix):
     infix = infix.split()
@@ -30,11 +34,10 @@ def convert_infix_to_epilogue(infix):
                 operators.push(char)
             elif char == ')':
                 # ) 从栈内弹出元素 直到弹出的元素为(为止 并将这些弹出的操作符追加到结果列表中
-                while True:
+                operator = operators.pop()
+                while operator != '(':
+                    epilogue.append(operator)
                     operator = operators.pop()
-                    if operator != '(':
-                        epilogue.append(operator)
-                    break
             elif operators.is_empty():
                 # 栈为空 则将当前运算符直接压入栈内
                 operators.push(char)
@@ -54,19 +57,28 @@ def convert_infix_to_epilogue(infix):
     # 遍历结束 如栈内还有操作符 则弹出并追加到结果列表尾部
     # 因为遍历已经结束了 所以必然在栈内不会有( 因此不用判断
     while not operators.is_empty():
+        # print(operators.items)
         epilogue.append(operators.pop())
 
     return " ".join(epilogue)
 
 
-# print(convert_infix_to_epilogue(" ( A + B ) * ( C + D ) "))
-# print(convert_infix_to_epilogue(" ( A + B ) * C "))
-# print(convert_infix_to_epilogue("A + B * C"))
+print(convert_infix_to_epilogue(" ( A + B ) * ( C + D ) "))
+print(convert_infix_to_epilogue(" ( A + B ) * C "))
+print(convert_infix_to_epilogue("A + B * C"))
 
 
 """
-中序表达式转化为后续表达式 书中代码
-书中代码和我自己写的比对 得出为什么他的可以比我的看上去更简洁且表达力更强
+中序表达式转化为后续表达式 蓝方实现
+蓝方代码和红方代码比对 得出为什么蓝方代码比红方代码看上去更简洁且表达力更强
+核心点在于:
+    在检测到操作符时,红方的思路是:
+        先检测栈是否为空
+        再比对操作符优先级
+    蓝方的思路是:
+        当栈不为空时检测运算符优先级
+    
+因此看上去蓝方的代码量更少 且蓝方用词精确 故 蓝方胜
 """
 
 
