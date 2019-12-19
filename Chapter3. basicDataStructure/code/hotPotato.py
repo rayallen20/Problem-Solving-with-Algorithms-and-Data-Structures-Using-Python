@@ -1,40 +1,56 @@
-from listHeadRepresentQueueHead import Queue
+from listHeadRepresentQueueTail import Queue
+"""
+红方实现:
+    改良版传土豆:使用游戏序列的尾部作为等待序列
+"""
 
 
 def pass_potato(players, pass_num):
     current_round_num = 0
-    wait_queue = Queue()
-    while True:
-        while current_round_num < pass_num:
-            if len(players) != 0:
-                # 将送出土豆的玩家放入等待序列中
-                wait_queue.enqueue(players.pop())
-            else:
-                # 将所有等待队列中的玩家放入游戏队列
-                while not wait_queue.is_empty():
-                    players.append(wait_queue.dequeue())
-                # 游戏队列中的第1位玩家再次开始传递土豆
-                wait_queue.enqueue(players.pop())
-            current_round_num += 1
+    players_queue = Queue()
+    while len(players) != 0:
+        players_queue.enqueue(players.pop(0))
 
-        while current_round_num == pass_num:
-            # 到达传递次数 淘汰玩家
-            if len(players) != 0:
-                # 若此时游戏队列中还有玩家 则游戏队列中的第1位玩家被淘汰
-                # 等待队列中的玩家被追加到游戏队列尾部
-                eliminated = players.pop(0)
-                while not wait_queue.is_empty():
-                    players.append(wait_queue.dequeue())
-            else:
-                # 此时游戏队列中没有玩家 则等待队列中的第1位玩家被淘汰
-                eliminated = wait_queue.dequeue()
-                while not wait_queue.is_empty():
-                    players.append(wait_queue.dequeue())
+    while players_queue.size() != 1:
+        players_queue.enqueue(players_queue.dequeue())
+        current_round_num += 1
 
-            print(eliminated)
+        if current_round_num == pass_num:
+            players_queue.dequeue()
+            current_round_num = 0
 
-            if len(players) == 1:
-                return players
+    return players_queue.dequeue()
 
 
-print(pass_potato(["Bill", "David", "Susan", "Jane", "Kent", "Brad"], 19))
+"""
+蓝方实现
+    改良版传土豆:使用游戏序列的尾部作为等待序列
+    代码比对:
+        从简洁性上看,蓝方胜
+            蓝方使用计步器i作为记录本轮传递土豆的次数 到达次数则直接淘汰玩家
+            红方使用变量记录本轮传递土豆次数 每当传递次数发生变化后 都要判断传递次数是否到达指定次数
+            如使用计步器 则判断的代码实际上是可以省略的.
+            
+        从可读性上看,双方均势
+            红方使用变量记录本轮传递次数,命名清晰,词可达意
+            但蓝方虽然使用计步器记录本轮传递次数 但只要将i改为current_round_num 同样词可达意
+            故可读性方面 双方均势            
+"""
+
+
+def hot_potato(name_list, num):
+    player_queue = Queue()
+    for name in name_list:
+        player_queue.enqueue(name)
+
+    while player_queue.size() > 1:
+        for i in range(num):
+            player_queue.enqueue(player_queue.dequeue())
+
+        player_queue.dequeue()
+
+    return player_queue.dequeue()
+
+
+print(pass_potato(["Bill", "David", "Susan", "Jane", "Kent", "Brad"], 7))
+print(hot_potato(["Bill", "David", "Susan", "Jane", "Kent", "Brad"], 7))
