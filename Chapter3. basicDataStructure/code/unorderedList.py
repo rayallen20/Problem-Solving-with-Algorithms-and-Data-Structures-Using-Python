@@ -46,13 +46,14 @@ class UnorderedList:
         :return: bool True表示待搜索值存在于列表中 False则反之
         """
         current_ref = self.head
+        found = False
         while current_ref is not None:
             if current_ref.get_data() == item:
-                return True
+                found = True
             else:
                 current_ref = current_ref.get_next()
 
-        return False
+        return found
 
 
 test_linked_list = UnorderedList()
